@@ -45,6 +45,23 @@ CREATE TABLE IF NOT EXISTS deliveries (
     input_digest TEXT NOT NULL, policy_revisions TEXT NOT NULL,
     FOREIGN KEY(product_id,product_revision) REFERENCES products(id,revision)
 );
+CREATE TABLE IF NOT EXISTS handovers (
+    id TEXT PRIMARY KEY, product_id TEXT NOT NULL, product_revision INTEGER NOT NULL,
+    party_a TEXT NOT NULL, party_b TEXT NOT NULL, purpose TEXT NOT NULL,
+    state TEXT NOT NULL DEFAULT 'pending', opened_at TEXT NOT NULL,
+    input_digest TEXT NOT NULL,
+    FOREIGN KEY(product_id,product_revision) REFERENCES products(id,revision),
+    CHECK(party_a <> party_b),
+    CHECK(state IN ('pending','completed','rejected'))
+);
+CREATE TABLE IF NOT EXISTS handover_decisions (
+    handover_id TEXT NOT NULL REFERENCES handovers(id), party TEXT NOT NULL,
+    decision TEXT NOT NULL, decided_at TEXT NOT NULL,
+    grant_basis TEXT NOT NULL, policy_basis TEXT NOT NULL,
+    input_digest TEXT NOT NULL, reasons TEXT NOT NULL,
+    PRIMARY KEY(handover_id,party),
+    CHECK(decision IN ('confirmed','rejected'))
+);
 CREATE TABLE IF NOT EXISTS audit (
     id INTEGER PRIMARY KEY AUTOINCREMENT, at TEXT NOT NULL, actor TEXT NOT NULL,
     action TEXT NOT NULL, subject TEXT NOT NULL, details TEXT NOT NULL
